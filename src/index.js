@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import socketio from 'socket.io';
 import mongoose from 'mongoose';
 
+import Game from './models/game';
+import getData from './quotableAPI';
+
 dotenv.config();
 
 dotenv.config();
@@ -21,3 +24,6 @@ mongoose.connect(process.env.MONGODB_URI,
   }, () => {
     console.log('successfull connected to database');
   });
+io.on('connect', (socket) => {
+  socket.emit('test', 'this is from the server');
+});
