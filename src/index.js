@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express from 'express';
 import dotenv from 'dotenv';
 import socketio from 'socket.io';
@@ -22,8 +23,28 @@ mongoose.connect(process.env.MONGODB_URI,
     useFindAndModify: false,
     useCreateIndex: true,
   }, () => {
-    console.log('successfull connected to database');
+    console.log('successfully connected to database');
   });
+
 io.on('connect', (socket) => {
-  socket.emit('test', 'this is from the server');
+  socket.on('create-game', async (name) => {
+    try {
+      const quotableData = await getData();
+      let game = new Game();
+      game.words = quotableData;
+      const player = {
+        socketID: socket.id,
+        isPartyLeader: true,
+        nickName: name,
+      };
+      game.players.push(player);
+      game = await game.save();
+      // eslint-disable-next-line no-underscore-dangle
+      const gameID = game._id.toString();
+      socket.join(gameID);
+      io.to(gameID).emit('updateGame', game);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 });
